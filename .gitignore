@@ -1,6 +1,28 @@
 # Prerequisites
 *.d
 
+*.h
+*.java
+*.c++
+*.cpp
+*.gradle
+*.png
+*.dat
+*.hl
+*.ndll
+*.hash
+*.exp
+*.ilk
+*.bat
+*gradlew
+*.ogg
+*.build
+*.ico
+*.pdb
+*.jar
+*.properties
+*.hdll
+
 # Compiled Object files
 *.slo
 *.lo
