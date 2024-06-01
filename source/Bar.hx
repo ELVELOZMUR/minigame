@@ -7,8 +7,8 @@ class Bar extends FlxSpriteGroup {
     public static var color1:FlxColor = FlxColor.fromRGB(44, 26, 64);
     public static var color2:FlxColor = FlxColor.BLACK;
 
-    var bg:FlxSprite;
-    var bar:FlxSprite;
+	public var bg:FlxSprite;
+	public var bar:FlxSprite;
 
     public var value(default, set):Float;
     private function set_value(numb:Float) {

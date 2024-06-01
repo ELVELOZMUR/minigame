@@ -1,15 +1,10 @@
 package;
 
-import flixel.util.helpers.FlxBounds;
 import flixel.FlxState;
-import flixel.addons.weapon.*;
+import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.group.FlxSpriteGroup;
 import flixel.util.FlxColor;
-#if mobile
-	import flixel.input.touch.FlxTouchManager;
-	import flixel.ui.FlxAnalog;
-	import flixel.ui.FlxVirtualPad;
-#end
+import flixel.util.helpers.FlxBounds;
 
 class PlayState extends FlxState
 {
@@ -22,18 +17,13 @@ class PlayState extends FlxState
 	public static var enemySpeed = 300;
 	public var score = 0;
 	public static var randomAngle = 20;
+	var timeText:FlxText;
 
 	var scoreText:FlxText;
 	var tween:FlxTween = null;
 	public var levelBar:Level;
 
 	public static var instance:PlayState;
-
-	#if mobile
-		public var multitouch:Bool =  FlxTouchManager.maxTouchPoints > 1 ? true : false;
-        public var moveButtons:FlxVirtualPad;
-        public var analog:FlxAnalog;
-	#end
 
 	override public function create()
 	{
@@ -57,17 +47,10 @@ class PlayState extends FlxState
 		levelBar = new Level();
 		add(levelBar);
 
-		#if mobile
-			moveButtons = new FlxVirtualPad(FULL, A_B_X_Y);
-			add(moveButtons);
-
-			if (multitouch)
-			{
-				analog = new FlxAnalog(0, 0, 40, 1);
-				add(analog);
-			}
-		#end
-		
+		timeText = new FlxText(0, 0, FlxG.width, "0", 20);
+		timeText.alignment = CENTER;
+		timeText.screenCenter(X);
+		add(timeText);
 	}
 
 	var time = 0.0;
@@ -85,61 +68,15 @@ class PlayState extends FlxState
 		time += elapsed;
 		time2 += elapsed;
 
-		if (time >= enemySpawnTime - Math.log(time2) / 100)
+		timeText.text = FlxStringUtil.formatTime(time2, false);
+
+		if (time >= enemySpawnTime - Math.log(time2) / 5)
 		{
-			var enemy = new Enemy(FlxG.random.int(-100, FlxG.width + 100), FlxG.random.int(-100, FlxG.height + 100));
+			var enemy = new Enemy(FlxG.random.int(-100, FlxG.width + 100), FlxG.random.int(-100, FlxG.height + 100),
+				Math.log(time2) / 10 > 1 ? Math.ceil(5 * Math.log(time2) / 5) : 5, 10);
 			enemies.add(enemy);
 			time = 0;
 		}
-
-		#if mobile
-
-			player.velocity.x = 0;
-			player.velocity.y = 0;
-
-			if (multitouch)
-			{
-				player.angle = analog.angle;
-
-				if (analog.pressed)
-				{
-					for (weapon in player.weapons)
-					{
-						weapon.fireFromAngle(new FlxBounds(analog.angle, analog.angle));
-					}
-				}
-			}
-			else
-			{
-				var enemy = getClosestEnemy();
-				if (enemy != null)
-				{
-					player.angle = FlxAngle.degreesBetween(player, enemy);
-
-					for (weapon in player.weapons)
-						{
-							weapon.fireFromAngle(new FlxBounds(player.angle, player.angle));
-						}
-				}
-			}
-
-			if (moveButtons.buttonUp.pressed)
-			{
-				player.velocity.y = -player.speed;
-			}
-			if (moveButtons.buttonLeft.pressed)
-			{
-				player.velocity.x = -player.speed;
-			}
-			if (moveButtons.buttonDown.pressed)
-			{
-				player.velocity.y = player.speed;
-			}
-			if (moveButtons.buttonRight.pressed)
-			{
-				player.velocity.x = player.speed;
-			}
-		#end
 
 		for (weapon in player.weapons)
 		{
@@ -164,7 +101,41 @@ class PlayState extends FlxState
 
 	}
 
+	override function onResize(Width:Int, Height:Int)
+	{
+		super.onResize(Width, Height);
+
+		timeText.screenCenter(X);
+		levelBar.bar.bar.y = Height - levelBar.bar.bar.height;
+		levelBar.bar.bg.y = Height - levelBar.bar.bg.height;
+		levelBar.text.y = Height - levelBar.bar.bar.height + (levelBar.bar.height / 2 - levelBar.text.height / 2);
+		levelBar.text.screenCenter(X);
+		FlxG.worldBounds.set(0, 0, Width, Height);
+		levelBar.bar.bg.makeGraphic(Width, 20, Bar.color2);
+		levelBar.bar.bar.makeGraphic(Math.ceil((Width / levelBar.bar.max) * levelBar.bar.value), 20, Bar.color1);
+		levelBar.bar.width = Width;
+		player.screenCenter();
+		for (weapon in player.weapons)
+		{
+			weapon.bounds.set(0, 0, Width, Height);
+		}
+
+		if (subState != null)
+			subState.onResize(Width, Height);
+	}
+
 	function die() {
+		for (weapon in player.weapons)
+		{
+			weapon.group.forEach(function(_)
+			{
+				_.destroy();
+			}, true);
+			weapon.group.clear();
+		}
+		if (subState != null)
+			closeSubState();
+		
 		FlxG.switchState(Menu.new);
 	}
 
@@ -178,21 +149,4 @@ class PlayState extends FlxState
 			tween = null;
 		}});
 	}
-
-	#if mobile
-	function getClosestEnemy():Enemy {
-
-		var enemy:Enemy;
-
-		for (enemy in enemies.members)
-		{
-			if (FlxMath.distanceBetween(player, enemy) <= 100)
-			{
-				return enemy;
-			}
-		}
-
-		return null;
-	}
-	#end
 }

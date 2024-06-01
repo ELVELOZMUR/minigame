@@ -1,7 +1,6 @@
 package;
 
-import flixel.addons.weapon.FlxBullet;
-import flixel.addons.weapon.FlxWeapon.FlxTypedWeapon;
+import weapon.FlxBullet;
 
 class Bullet extends FlxBullet {
 

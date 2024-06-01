@@ -1,21 +1,28 @@
 package;
 
 import flixel.FlxState;
+import flixel.system.scaleModes.*;
 import flixel.text.FlxText;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
+import lime.app.Application;
 
 class Menu extends FlxState{
+	var bg:FlxSprite;
+	var text:FlxText;
+
     override function create() {
         super.create();
 
-        FlxG.scaleMode = new flixel.system.scaleModes.FillScaleMode();
+		Preferences.initialize();
 
-        var bg = new FlxSprite();
-        bg.makeGraphic(FlxG.width, FlxG.height, FlxColor.fromRGB(23, 21, 21));
-        add(bg);
+		FlxG.scaleMode = new StageSizeScaleMode();
+		FlxG.keys.preventDefaultKeys = [W, A, S, D];
+		Application.current.window.setMinSize(FlxG.width, FlxG.height);
 
-        var text = new FlxText(0, 0, 200, "Press anywhere to start", 20);
+		bgColor = FlxColor.fromRGB(23, 21, 21);
+
+		text = new FlxText(0, 0, 200, "Press anywhere to start", 20);
         text.autoSize = true;
         text.wordWrap = false;
         text.alpha = 0;
@@ -23,24 +30,29 @@ class Menu extends FlxState{
         text.screenCenter();
         add(text);
 
+		FlxG.sound.cacheAll();
+
+		FlxG.sound.playMusic("potatoGame", Preferences.config.volume / 10, true);
+
         FlxTween.tween(text, {alpha: 1}, 5, {type: PINGPONG, ease: FlxEase.sineInOut});
-    }
+	}
+
+	override function onResize(Width:Int, Height:Int)
+	{
+		super.onResize(Width, Height);
+
+		if (text != null)
+			text.screenCenter();
+
+		FlxG.worldBounds.set(0, 0, Width, Height);
+	}
 
     override function update(elapsed:Float) {
         super.update(elapsed);
 
-        #if desktop
-        if (FlxG.mouse.justPressed)
-        {
-            FlxG.switchState(PlayState.new);
-        }
-        #end
-
-        #if mobile
-            if (FlxG.touches.getFirst().justPressed)
-            {
-                FlxG.switchState(PlayState.new);
-            }
-        #end
+		if (FlxG.mouse.justPressed)
+		{
+			FlxG.switchState(PlayState.new);
+		}
     }
 }

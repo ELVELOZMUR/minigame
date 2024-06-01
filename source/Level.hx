@@ -5,12 +5,12 @@ import flixel.util.FlxColor;
 
 class Level extends FlxSpriteGroup {
 
-    var bar:Bar;
+	public var bar:Bar;
     public static var baseLevel = 500;
     public var currentEXP = 0;
     public var currentLevel = 1;
     public var levelLimit = Math.ceil(FlxMath.roundDecimal(baseLevel * Math.log(2), 1));
-    var text:FlxText;
+	public var text:FlxText;
 
     public function new() {
         

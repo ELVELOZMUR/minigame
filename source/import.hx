@@ -1,5 +1,6 @@
 package;
 
+import Button;
 import flixel.*;
 import flixel.group.*;
 import flixel.input.keyboard.FlxKey;
@@ -8,3 +9,5 @@ import flixel.math.FlxPoint;
 import flixel.system.scaleModes.*;
 import flixel.text.FlxText;
 import flixel.tweens.*;
+import flixel.util.*;
+import weapon.FlxWeapon;

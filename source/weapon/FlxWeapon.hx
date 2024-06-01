@@ -1,12 +1,12 @@
-package flixel.addons.weapon;
+package weapon;
 
 // TODO: remove this check when min flixel version is 5.6.0,
 // So that FlxAddonDefines will handle this
+import Weapon.WeaponType;
 import flixel.FlxBasic;
 import flixel.FlxG;
 import flixel.FlxObject;
 import flixel.FlxSprite;
-import flixel.addons.weapon.FlxBullet;
 import flixel.addons.weapon.FlxWeapon.FlxTypedWeapon;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.input.touch.FlxTouch;
@@ -19,6 +19,7 @@ import flixel.sound.FlxSound;
 import flixel.tile.FlxTilemap;
 import flixel.util.helpers.FlxBounds;
 import flixel.util.helpers.FlxRange;
+import weapon.FlxBullet;
 #if (flixel < "5.3.0")
 #error "Flixel-Addons is not compatible with flixel versions older than 5.3.0";
 #end
@@ -177,7 +178,7 @@ class FlxTypedWeapon<TBullet:FlxBullet>
 	 * @param	Mode	Mode to use for firing the bullet
 	 * @return	True if a bullet was fired or false if one wasn't available. The bullet last fired is stored in FlxWeapon.prevBullet
 	 */
-	function runFire(Mode:FlxWeaponFireMode, bulletsQuantity:Int):Bool
+	function runFire(Mode:FlxWeaponFireMode, bulletsQuantity:Int, ?directions:Array<Float>):Bool
 	{
 		if (fireRate > 0 && FlxG.game.ticks < nextFire)
 		{
@@ -201,83 +202,99 @@ class FlxTypedWeapon<TBullet:FlxBullet>
 
         var lastBulletAngle = currentBullet != null ?currentBullet.angle : null;
 
-        //just an easy multiShot thing
-        for (i in 0...bulletsQuantity)
-        {
-            // Get a free bullet from the pool
-            currentBullet = group.recycle(null, bulletFactory.bind(this));
-            if (currentBullet == null)
-            {
-                return false;
-            }
-    
-            // Clear any velocity that may have been previously set from the pool
-            currentBullet.velocity.x = 0; // TODO is this really necessary?
-            currentBullet.velocity.y = 0;
-    
-            switch (fireFrom)
-            {
-                case PARENT(parent, offset, useParentDirection, angleOffset):
-                    // store new offset in a new variable
-                    var actualOffset = new FlxPoint(FlxG.random.float(offset.min.x, offset.max.x), FlxG.random.float(offset.min.y, offset.max.y));
-                    if (useParentDirection)
-                    {
-                        // rotate actual offset around parent origin using the parent angle
-                        actualOffset = rotatePoints(actualOffset, parent.origin, parent.angle);
-    
-                        // reposition offset to have it's origin at the new returned point
-                        actualOffset.subtract(currentBullet.width / 2, currentBullet.height / 2);
-                        actualOffset.subtract(parent.offset.x, parent.offset.y);
-                    }
-    
-                    currentBullet.last.x = currentBullet.x = parent.x + actualOffset.x;
-                    currentBullet.last.y = currentBullet.y = parent.y + actualOffset.y;
-    
-                case POSITION(position):
-                    currentBullet.last.x = currentBullet.x = FlxG.random.float(position.min.x, position.max.x);
-                    currentBullet.last.y = currentBullet.y = FlxG.random.float(position.min.y, position.max.y);
-            }
-    
-            currentBullet.exists = true;
-            @:access(currentBullet.bounds = bounds)
-            currentBullet.elasticity = bulletElasticity;
-            currentBullet.lifespan = FlxG.random.float(bulletLifeSpan.min, bulletLifeSpan.max);
-    
-            switch (Mode)
-            {
-                case FIRE_AT_POSITION(x, y):
-                    internalFireAtPoint(currentBullet, FlxPoint.weak(x, y));
-    
-                case FIRE_AT_TARGET(target):
-                    internalFireAtPoint(currentBullet, target.getPosition(FlxPoint.weak()));
-    
-                case FIRE_FROM_ANGLE(angle):
-                    internalFireFromAngle(currentBullet, FlxG.random.float(angle.min, angle.max, lastBulletAngle != null ? [lastBulletAngle] : []));
-    
-                case FIRE_FROM_PARENT_ANGLE(angle):
-                    internalFireFromAngle(currentBullet, parent.angle + FlxG.random.float(angle.min, angle.max, lastBulletAngle != null ? [lastBulletAngle] : []));
-    
-                case FIRE_FROM_PARENT_FACING(angle):
-                    internalFireFromAngle(currentBullet, parent.facing.degrees + FlxG.random.float(angle.min, angle.max, lastBulletAngle != null ? [lastBulletAngle] : []));
-    
-                #if FLX_TOUCH
-                case FIRE_AT_TOUCH(touch):
-                    internalFireAtPoint(currentBullet, touch.getPosition(FlxPoint.weak()));
-                #end
-    
-                #if FLX_MOUSE
-                case FIRE_AT_MOUSE:
-                    internalFireAtPoint(currentBullet, FlxG.mouse.getPosition(FlxPoint.weak()));
-                #end
-            }
-    
-            lastBulletAngle = currentBullet.angle;
+		//AAAAA
+		if (directions != null) {
 
-            if (currentBullet.animation.getByName("fire") != null)
-            {
-                currentBullet.animation.play("fire");
-            }
-        }
+			for (direction in directions)
+			{
+				switch (Mode)
+				{
+					case FIRE_FROM_PARENT_ANGLE(angleNoise):
+						internalFireAtDirection(direction, angleNoise);
+					default:
+						internalFireAtDirection(direction, new FlxBounds(0.0, 0.0));
+				}
+			}
+
+			return true;
+		}
+
+		for (i in 0...bulletsQuantity)
+			{
+				// Get a free bullet from the pool
+				currentBullet = group.recycle(null, bulletFactory.bind(this));
+				if (currentBullet == null)
+				{
+					return false;
+				}
+		
+				// Clear any velocity that may have been previously set from the pool
+				currentBullet.velocity.x = 0; // TODO is this really necessary?
+				currentBullet.velocity.y = 0;
+		
+				switch (fireFrom)
+				{
+					case PARENT(parent, offset, useParentDirection, angleOffset):
+						// store new offset in a new variable
+						var actualOffset = new FlxPoint(FlxG.random.float(offset.min.x, offset.max.x), FlxG.random.float(offset.min.y, offset.max.y));
+						if (useParentDirection)
+						{
+							// rotate actual offset around parent origin using the parent angle
+							actualOffset = rotatePoints(actualOffset, parent.origin, parent.angle);
+		
+							// reposition offset to have it's origin at the new returned point
+							actualOffset.subtract(currentBullet.width / 2, currentBullet.height / 2);
+							actualOffset.subtract(parent.offset.x, parent.offset.y);
+						}
+		
+						currentBullet.last.x = currentBullet.x = parent.x + actualOffset.x;
+						currentBullet.last.y = currentBullet.y = parent.y + actualOffset.y;
+		
+					case POSITION(position):
+						currentBullet.last.x = currentBullet.x = FlxG.random.float(position.min.x, position.max.x);
+						currentBullet.last.y = currentBullet.y = FlxG.random.float(position.min.y, position.max.y);
+				}
+		
+				currentBullet.exists = true;
+				@:access(currentBullet.bounds = bounds)
+				currentBullet.elasticity = bulletElasticity;
+				currentBullet.lifespan = FlxG.random.float(bulletLifeSpan.min, bulletLifeSpan.max);
+		
+				switch (Mode)
+				{
+					case FIRE_AT_POSITION(x, y):
+						internalFireAtPoint(currentBullet, FlxPoint.weak(x, y));
+		
+					case FIRE_AT_TARGET(target):
+						internalFireAtPoint(currentBullet, target.getPosition(FlxPoint.weak()));
+		
+					case FIRE_FROM_ANGLE(angle):
+						internalFireFromAngle(currentBullet, FlxG.random.float(angle.min, angle.max, lastBulletAngle != null ? [lastBulletAngle] : []));
+		
+					case FIRE_FROM_PARENT_ANGLE(angle):
+						internalFireFromAngle(currentBullet, parent.angle + FlxG.random.float(angle.min, angle.max, lastBulletAngle != null ? [lastBulletAngle] : []));
+		
+					case FIRE_FROM_PARENT_FACING(angle):
+						internalFireFromAngle(currentBullet, parent.facing.degrees + FlxG.random.float(angle.min, angle.max, lastBulletAngle != null ? [lastBulletAngle] : []));
+		
+					#if FLX_TOUCH
+					case FIRE_AT_TOUCH(touch):
+						internalFireAtPoint(currentBullet, touch.getPosition(FlxPoint.weak()));
+					#end
+		
+					#if FLX_MOUSE
+					case FIRE_AT_MOUSE:
+						internalFireAtPoint(currentBullet, FlxG.mouse.getPosition(FlxPoint.weak()));
+					#end
+				}
+		
+				lastBulletAngle = currentBullet.angle;
+	
+				if (currentBullet.animation.getByName("fire") != null)
+				{
+					currentBullet.animation.play("fire");
+				}
+			}
 
 		// Post fire stuff
 		if (onPostFireCallback != null)
@@ -291,6 +308,60 @@ class FlxTypedWeapon<TBullet:FlxBullet>
 			onPostFireSound.play();
 		}
 		#end
+
+		return true;
+	}
+
+	private function internalFireAtDirection(angle1:Float, angle2:FlxBounds<Float>):Bool {
+
+		var lastBulletAngle = currentBullet != null ? currentBullet.angle : null;
+
+				// Get a free bullet from the pool
+				currentBullet = group.recycle(null, bulletFactory.bind(this));
+				if (currentBullet == null)
+					return false;
+				
+		
+				// Clear any velocity that may have been previously set from the pool
+				currentBullet.velocity.x = 0; // TODO is this really necessary?
+				currentBullet.velocity.y = 0;
+		
+				switch (fireFrom)
+				{
+					case PARENT(parent, offset, useParentDirection, angleOffset):
+						// store new offset in a new variable
+						var actualOffset = new FlxPoint(FlxG.random.float(offset.min.x, offset.max.x), FlxG.random.float(offset.min.y, offset.max.y));
+						if (useParentDirection)
+						{
+							// rotate actual offset around parent origin using the parent angle
+							actualOffset = rotatePoints(actualOffset, parent.origin, parent.angle);
+		
+							// reposition offset to have it's origin at the new returned point
+							actualOffset.subtract(currentBullet.width / 2, currentBullet.height / 2);
+							actualOffset.subtract(parent.offset.x, parent.offset.y);
+						}
+		
+						currentBullet.last.x = currentBullet.x = parent.x + actualOffset.x;
+						currentBullet.last.y = currentBullet.y = parent.y + actualOffset.y;
+		
+					case POSITION(position):
+						currentBullet.last.x = currentBullet.x = FlxG.random.float(position.min.x, position.max.x);
+						currentBullet.last.y = currentBullet.y = FlxG.random.float(position.min.y, position.max.y);
+				}
+		
+				currentBullet.exists = true;
+				@:access(currentBullet.bounds = bounds)
+				currentBullet.elasticity = bulletElasticity;
+				currentBullet.lifespan = FlxG.random.float(bulletLifeSpan.min, bulletLifeSpan.max);
+		
+				internalFireFromAngle(currentBullet, angle1 + FlxG.random.float(angle2.min, angle2.max, lastBulletAngle != null ? [lastBulletAngle] : []));
+		
+				lastBulletAngle = currentBullet.angle;
+	
+				if (currentBullet.animation.getByName("fire") != null)
+				{
+					currentBullet.animation.play("fire");
+				}
 
 		return true;
 	}
@@ -321,9 +392,9 @@ class FlxTypedWeapon<TBullet:FlxBullet>
 	 *
 	 * @return	True if a bullet was fired or false if one wasn't available. A reference to the bullet fired is stored in FlxWeapon.currentBullet.
 	 */
-	public inline function fireFromParentFacing(angleNoise:FlxBounds<Float>, bullets:Int = 1):Bool
+	public inline function fireFromParentFacing(angleNoise:FlxBounds<Float>, bullets:Int = 1, ?type:Array<Float>):Bool
 	{
-		return runFire(FIRE_FROM_PARENT_FACING(angleNoise), bullets);
+		return runFire(FIRE_FROM_PARENT_FACING(angleNoise), bullets, type);
 	}
 
 	#if FLX_MOUSE
@@ -332,9 +403,9 @@ class FlxTypedWeapon<TBullet:FlxBullet>
 	 *
 	 * @return	True if a bullet was fired or false if one wasn't available. A reference to the bullet fired is stored in FlxWeapon.currentBullet.
 	 */
-	public inline function fireAtMouse(bullets:Int = 1):Bool
+	public inline function fireAtMouse(bullets:Int = 1, ?type:Array<Float>):Bool
 	{
-		return runFire(FIRE_AT_MOUSE, bullets);
+		return runFire(FIRE_AT_MOUSE, bullets, type);
 	}
 	#end
 
@@ -345,11 +416,11 @@ class FlxTypedWeapon<TBullet:FlxBullet>
 	 * @param	Touch	The FlxTouch object to fire at, if null use the first available one
 	 * @return	True if a bullet was fired or false if one wasn't available. A reference to the bullet fired is stored in FlxWeapon.currentBullet.
 	 */
-	public function fireAtTouch(?Touch:FlxTouch, bullets:Int = 1):Bool
+	public function fireAtTouch(?Touch:FlxTouch, bullets:Int = 1, ?type:Array<Float>):Bool
 	{
 		var touch = Touch == null ? FlxG.touches.getFirst() : Touch;
 		if (touch != null)
-			return runFire(FIRE_AT_TOUCH(touch), bullets);
+			return runFire(FIRE_AT_TOUCH(touch), bullets, type);
 		else
 			return false;
 	}
@@ -362,9 +433,9 @@ class FlxTypedWeapon<TBullet:FlxBullet>
 	 * @param	Y	The y coordinate (in game world pixels) to fire at
 	 * @return	True if a bullet was fired or false if one wasn't available. A reference to the bullet fired is stored in FlxWeapon.currentBullet.
 	 */
-	public inline function fireAtPosition(X:Int, Y:Int, bullets:Int = 1):Bool
+	public inline function fireAtPosition(X:Int, Y:Int, bullets:Int = 1, ?type:Array<Float>):Bool
 	{
-		return runFire(FIRE_AT_POSITION(X, Y), bullets);
+		return runFire(FIRE_AT_POSITION(X, Y), bullets, type);
 	}
 
 	/**
@@ -373,9 +444,9 @@ class FlxTypedWeapon<TBullet:FlxBullet>
 	 * @param	Target	The FlxSprite you wish to fire the bullet at
 	 * @return	True if a bullet was fired or false if one wasn't available. A reference to the bullet fired is stored in FlxWeapon.currentBullet.
 	 */
-	public inline function fireAtTarget(Target:FlxSprite, bullets:Int = 1):Bool
+	public inline function fireAtTarget(Target:FlxSprite, bullets:Int = 1, ?type:Array<Float>):Bool
 	{
-		return runFire(FIRE_AT_TARGET(Target), bullets);
+		return runFire(FIRE_AT_TARGET(Target), bullets, type);
 	}
 
 	/**
@@ -384,9 +455,9 @@ class FlxTypedWeapon<TBullet:FlxBullet>
 	 * @param	angle	The angle (in degrees) calculated in clockwise positive direction (down = 90 degrees positive, right = 0 degrees positive, up = 90 degrees negative)
 	 * @return	True if a bullet was fired or false if one wasn't available. A reference to the bullet fired is stored in FlxWeapon.currentBullet.
 	 */
-	public inline function fireFromAngle(angle:FlxBounds<Float>, bullets:Int = 1):Bool
+	public inline function fireFromAngle(angle:FlxBounds<Float>, bullets:Int = 1, ?type:Array<Float>):Bool
 	{
-		return runFire(FIRE_FROM_ANGLE(angle), bullets);
+		return runFire(FIRE_FROM_ANGLE(angle), bullets,type);
 	}
 
 	/**
@@ -394,9 +465,9 @@ class FlxTypedWeapon<TBullet:FlxBullet>
 	 *
 	 * @return	True if a bullet was fired or false if one wasn't available. A reference to the bullet fired is stored in FlxWeapon.currentBullet.
 	 */
-	public inline function fireFromParentAngle(angle:FlxBounds<Float>, bullets:Int = 1):Bool
+	public inline function fireFromParentAngle(angle:FlxBounds<Float>, bullets:Int = 1, ?type:Array<Float>):Bool
 	{
-		return runFire(FIRE_FROM_PARENT_ANGLE(angle), bullets);
+		return runFire(FIRE_FROM_PARENT_ANGLE(angle), bullets, type);
 	}
 
 	/**

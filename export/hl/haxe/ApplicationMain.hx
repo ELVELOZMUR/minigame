@@ -35,10 +35,10 @@ class ApplicationMain
 		ManifestResources.init(config);
 		#end
 
-		app.meta["build"] = "105";
-		app.meta["company"] = "HaxeFlixel";
+		app.meta["build"] = "2";
+		app.meta["company"] = "ELVELOZMUR";
 		app.meta["file"] = "FlxProject";
-		app.meta["name"] = "FlxProject";
+		app.meta["name"] = "MiniGame";
 		app.meta["packageName"] = "com.example.myapp";
 		app.meta["version"] = "0.0.1";
 
@@ -60,7 +60,7 @@ class ApplicationMain
 			minimized: false,
 			parameters: {},
 			resizable: true,
-			title: "FlxProject",
+			title: "MiniGame",
 			width: 640,
 			x: null,
 			y: null,
@@ -102,7 +102,7 @@ class ApplicationMain
 		app.createWindow(attributes);
 		
 		#elseif air
-		app.window.title = "FlxProject";
+		app.window.title = "MiniGame";
 		#else
 		app.window.context.attributes.background = 0;
 		app.window.frameRate = 60;

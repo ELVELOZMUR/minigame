@@ -70,6 +70,8 @@ class Enemy extends FlxSprite {
             text.color = FlxColor.fromRGB(255, 84, 84);
             PlayState.instance.add(text);
 
+			FlxG.sound.play("hurt", Preferences.config.volume / 10);
+
             FlxTween.tween(text, {alpha: 0, y: text.y - 50}, 1, {type: ONESHOT, ease: FlxEase.smoothStepIn, onComplete: function (_) {
                 text.visible = false;
                 text.destroy();
