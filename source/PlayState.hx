@@ -38,7 +38,7 @@ class PlayState extends FlxState
 		player = new Player();
 		add(player);
 
-		scoreText = new FlxText(20, 20, 600, 'Score: $score', 20);
+		scoreText = new FlxText(20, 20, 600, 'SCORE: $score', 20);
 		scoreText.wordWrap = false;
 		scoreText.autoSize = true;
 		scoreText.antialiasing = true;

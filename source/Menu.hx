@@ -22,7 +22,11 @@ class Menu extends FlxState{
 
 		bgColor = FlxColor.fromRGB(23, 21, 21);
 
-		text = new FlxText(0, 0, 200, "Press anywhere to start", 20);
+		var taxt = "Press anywhere to start";
+		if (FlxG.onMobile)
+			taxt = "This device is not supported, sorry!";
+
+		text = new FlxText(0, 0, 200, taxt, 20);
         text.autoSize = true;
         text.wordWrap = false;
         text.alpha = 0;
@@ -50,9 +54,13 @@ class Menu extends FlxState{
     override function update(elapsed:Float) {
         super.update(elapsed);
 
-		if (FlxG.mouse.justPressed)
+		if (!FlxG.onMobile)
 		{
-			FlxG.switchState(PlayState.new);
+			if (FlxG.mouse.justPressed)
+			{
+				FlxG.switchState(PlayState.new);
+			}
 		}
+
     }
 }
