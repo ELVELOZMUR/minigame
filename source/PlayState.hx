@@ -20,8 +20,12 @@ class PlayState extends FlxState
 	var timeText:FlxText;
 
 	var scoreText:FlxText;
+	/**
+	 * This tween avoid crashes, it holds the score pop scale tween
+	 */
 	var tween:FlxTween = null;
 	public var levelBar:Level;
+
 
 	public static var instance:PlayState;
 
@@ -30,6 +34,10 @@ class PlayState extends FlxState
 		super.create();
 
 		bgColor = FlxColor.fromRGB(23, 21, 21);
+		var camHUD = new FlxCamera(0, 0, Math.ceil(camera.viewWidth), Math.ceil(camera.viewHeight), 1);
+		camHUD.bgColor.alpha = 0;
+		FlxG.cameras.add(camHUD, false);
+
 		instance = this;
 
 		enemies = new FlxTypedSpriteGroup<Enemy>();
@@ -42,15 +50,20 @@ class PlayState extends FlxState
 		scoreText.wordWrap = false;
 		scoreText.autoSize = true;
 		scoreText.antialiasing = true;
+		scoreText.camera = camHUD;
 		add(scoreText);
 
 		levelBar = new Level();
+		levelBar.camera = camHUD;
 		add(levelBar);
 
 		timeText = new FlxText(0, 0, FlxG.width, "0", 20);
 		timeText.alignment = CENTER;
+		timeText.camera = camHUD;
 		timeText.screenCenter(X);
 		add(timeText);
+		//
+		FlxG.camera.follow(player, TOPDOWN_TIGHT);
 	}
 
 	var time = 0.0;
@@ -59,6 +72,8 @@ class PlayState extends FlxState
 	override public function update(elapsed:Float)
 	{
 		super.update(elapsed);
+
+		FlxG.worldBounds.set(camera.viewX, camera.viewY, camera.viewWidth, camera.viewHeight);
 
 		if (player.health <= 0)
 		{
@@ -80,6 +95,8 @@ class PlayState extends FlxState
 
 		for (weapon in player.weapons)
 		{
+			weapon.bounds = FlxG.worldBounds;
+
 			weapon.bulletsOverlap(enemies, function (a, b) {
 				if (cast(a, Enemy).fullyAppeared)
 				{
@@ -87,9 +104,9 @@ class PlayState extends FlxState
 					if (!a.alive)
 					{
 						enemies.remove(cast(a, Enemy), true);
+						scorePop(cast(a, Enemy).score);
 					}
-		
-					scorePop(cast(a, Enemy).score);
+
 				}
 			});
 		}
@@ -99,29 +116,6 @@ class PlayState extends FlxState
 			player.hurt(cast(b, Enemy).damage);
 		});
 
-	}
-
-	override function onResize(Width:Int, Height:Int)
-	{
-		super.onResize(Width, Height);
-
-		timeText.screenCenter(X);
-		levelBar.bar.bar.y = Height - levelBar.bar.bar.height;
-		levelBar.bar.bg.y = Height - levelBar.bar.bg.height;
-		levelBar.text.y = Height - levelBar.bar.bar.height + (levelBar.bar.height / 2 - levelBar.text.height / 2);
-		levelBar.text.screenCenter(X);
-		FlxG.worldBounds.set(0, 0, Width, Height);
-		levelBar.bar.bg.makeGraphic(Width, 20, Bar.color2);
-		levelBar.bar.bar.makeGraphic(Math.ceil((Width / levelBar.bar.max) * levelBar.bar.value), 20, Bar.color1);
-		levelBar.bar.width = Width;
-		player.screenCenter();
-		for (weapon in player.weapons)
-		{
-			weapon.bounds.set(0, 0, Width, Height);
-		}
-
-		if (subState != null)
-			subState.onResize(Width, Height);
 	}
 
 	function die() {

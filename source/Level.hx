@@ -1,22 +1,24 @@
 package;
 
-import Bar;
+import flixel.ui.FlxBar;
 import flixel.util.FlxColor;
 
 class Level extends FlxSpriteGroup {
 
-	public var bar:Bar;
+	public var bar:FlxBar;
     public static var baseLevel = 500;
     public var currentEXP = 0;
     public var currentLevel = 1;
-    public var levelLimit = Math.ceil(FlxMath.roundDecimal(baseLevel * Math.log(2), 1));
+	public var levelLimit = baseLevel;
 	public var text:FlxText;
 
     public function new() {
         
         super();
 
-        bar = new Bar(0, FlxG.height - 20, 20, FlxG.width, 0, levelLimit, this, "currentEXP");
+		bar = new FlxBar(0, FlxG.height - 20, LEFT_TO_RIGHT, FlxG.width, 20, this, "currentEXP", 0, levelLimit);
+		bar.createFilledBar(FlxColor.BLACK, FlxColor.fromRGB(44, 26, 64));
+		bar.alpha = 0.5;
         add(bar);
 
         text = new FlxText(bar.x, FlxG.height - 20, FlxG.width, '$currentEXP / $levelLimit', 10);
@@ -33,14 +35,15 @@ class Level extends FlxSpriteGroup {
         {
             currentEXP -= currentEXP;
             currentLevel += 1;
-            levelLimit = Math.ceil(FlxMath.roundDecimal(baseLevel * Math.log(currentLevel + 1), 1));
-            bar.max = levelLimit;
+			levelLimit = Math.ceil(FlxMath.roundDecimal(levelLimit * 1.20, 1));
+			bar.setRange(0, levelLimit);
             text.text = '$currentEXP / $levelLimit';
             levelUp();
         }
     }
 
-    public function levelUp() {
+	public inline function levelUp()
+	{
         PlayState.instance.openSubState(new LevelUpSubstate());
     }
 }

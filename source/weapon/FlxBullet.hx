@@ -39,8 +39,9 @@ class FlxBullet extends FlxSprite
 			}
 		}
 
-		if (x < 0 || x > FlxG.width || y < 0 || y > FlxG.height)
-			kill();
+		if (bounds != null)
+			if (!bounds.containsXY(x, y))
+				kill();
 
 		super.update(elapsed);
 	}

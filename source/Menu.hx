@@ -14,19 +14,26 @@ class Menu extends FlxState{
     override function create() {
         super.create();
 
+		camera.focusOn(new FlxPoint(FlxG.width / 2, FlxG.height / 2));
+
 		Preferences.initialize();
 
-		FlxG.scaleMode = new StageSizeScaleMode();
 		FlxG.keys.preventDefaultKeys = [W, A, S, D];
 		Application.current.window.setMinSize(FlxG.width, FlxG.height);
 
 		bgColor = FlxColor.fromRGB(23, 21, 21);
 
-		var taxt = "Press anywhere to start";
-		if (FlxG.onMobile)
-			taxt = "This device is not supported, sorry!";
+		#if !mobile
+		var startButton = new Button(50, FlxG.height / 2 - 75, 400, 150, FlxColor.fromRGB(124, 124, 255), "Press anywhere to start");
+		startButton.onClick = function()
+		{
+			FlxG.switchState(PlayState.new);
+		}
+		add(startButton);
+		#end
 
-		text = new FlxText(0, 0, 200, taxt, 20);
+		#if mobile
+		text = new FlxText(0, 0, 200, "This device is not supported, sorry!", 20);
         text.autoSize = true;
         text.wordWrap = false;
         text.alpha = 0;
@@ -34,33 +41,10 @@ class Menu extends FlxState{
         text.screenCenter();
         add(text);
 
-		FlxG.sound.cacheAll();
-
-		FlxG.sound.playMusic("potatoGame", Preferences.config.volume / 10, true);
-
         FlxTween.tween(text, {alpha: 1}, 5, {type: PINGPONG, ease: FlxEase.sineInOut});
+		#end
+
+		FlxG.sound.cacheAll();
+		FlxG.sound.playMusic("potatoGame", Preferences.config.volume / 100, true);
 	}
-
-	override function onResize(Width:Int, Height:Int)
-	{
-		super.onResize(Width, Height);
-
-		if (text != null)
-			text.screenCenter();
-
-		FlxG.worldBounds.set(0, 0, Width, Height);
-	}
-
-    override function update(elapsed:Float) {
-        super.update(elapsed);
-
-		if (!FlxG.onMobile)
-		{
-			if (FlxG.mouse.justPressed)
-			{
-				FlxG.switchState(PlayState.new);
-			}
-		}
-
-    }
 }

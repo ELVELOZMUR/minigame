@@ -42,7 +42,7 @@ class LevelUpSubstate extends FlxSubState {
 	var bgs:Array<FlxSprite> = [];
 	var texts:Array<FlxText> = [];
 
-	var choiceQuantity:Int = 3;
+	var choiceQuantity:Int = 4;
 
 	var bg:FlxSprite;
 
@@ -54,30 +54,7 @@ class LevelUpSubstate extends FlxSubState {
 		bg.alpha = 0.8;
 		add(bg);
 
-		generateChoices();
-	}
-
-	override function onResize(Width:Int, Height:Int) {
-
-		bg.makeGraphic(Width, Height, FlxColor.BLACK);
-
-		for (i in 0...bgs.length)
-		{
-			bgs[i].y = 50;
-			bgs[i].x = Width/choiceQuantity * i;
-			bgs[i].setGraphicSize(Width/choiceQuantity, Height - 100);
-			bgs[i].updateHitbox();
-
-			texts[i].x = bgs[i].x;
-			texts[i].y = bgs[i].y;
-			texts[i].fieldWidth = Width/choiceQuantity;
-
-			buttons[i].x = texts[i].x;
-			buttons[i].y = texts[i].y + texts[i].height + 5;
-			buttons[i].width = Math.ceil(Width/choiceQuantity);
-		}
-
-		super.onResize(Width, Height);
+		inline generateChoices();
 	}
 
 	function generateChoices():Void
@@ -129,7 +106,7 @@ class LevelUpSubstate extends FlxSubState {
 	function genText(data:OneOfTwo<Weapon, Modifier>, i:Int) {
 		if ((data is Weapon))
 		{
-			var bg = new FlxSprite(FlxG.width/choiceQuantity * i, 50);
+			var bg = new FlxSprite(camera.viewX + camera.viewWidth / choiceQuantity * i, camera.viewY + 50);
 			bg.makeGraphic(Math.ceil(FlxG.width/choiceQuantity), FlxG.height - 100, FlxColor.TRANSPARENT);
 			FlxSpriteUtil.drawRoundRect(bg, 0, 0, FlxG.width/choiceQuantity, FlxG.height - 100, 20, 20, FlxColor.GRAY);
 			bg.alpha = 0.6;
@@ -215,7 +192,7 @@ class LevelUpSubstate extends FlxSubState {
 					damage: FlxG.random.int(5, 15),
 					fireRate: FlxG.random.int(800, 2000),
 					bulletSize: FlxG.random.float(0.7, 1.1),
-					multishot: FlxG.random.int(1, 2),
+					multishot: 1,
 					passive: false,
 					type: PISTOL
 				}
@@ -238,7 +215,7 @@ class LevelUpSubstate extends FlxSubState {
 					damage: FlxG.random.int(10, 15),
 					fireRate: FlxG.random.int(200, 2000),
 					bulletSize: FlxG.random.float(0.8, 1.2),
-					multishot: FlxG.random.int(1, 3),
+					multishot: 1,
 					passive: false,
 					type: RIFLE
 				}

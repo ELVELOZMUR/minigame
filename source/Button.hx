@@ -9,6 +9,7 @@ class Button extends FlxGroup
 	public var justPressed(get, null):Bool;
 
 	var tween:FlxTween = null;
+	var tween2:FlxTween = null;
 
 	public var hovering(default, null):Bool = false;
 
@@ -99,7 +100,7 @@ class Button extends FlxGroup
 
 		if (text != null)
 		{
-			this.text = new FlxText(bg.x, 0, width, text, 10);
+			this.text = new FlxText(bg.x, 0, width, text, Math.ceil(height / 8));
 			this.text.alignment = CENTER;
 			this.text.y = bg.y + bg.height / 2 - this.text.height / 2;
 			add(this.text);
@@ -112,32 +113,41 @@ class Button extends FlxGroup
 
 		if (FlxG.mouse.overlaps(bg, camera))
 		{
-			hovering = true;
-
-			if (tween != null)
+			if (tween != null && !hovering)
 				tween.cancel();
 
-			tween = FlxTween.tween(bg, {"scale.x": 1.1, "scale.y": 1.1}, 0.1, {
-				type: ONESHOT,
-				onComplete: function(_)
-				{
-					tween = null;
-				},
-				ease: FlxEase.circInOut
-			});
+			if (bg.scale.x != 1.1)
+			{
+				tween = FlxTween.tween(bg, {"scale.x": 1.1, "scale.y": 1.1}, 0.1, {
+					type: ONESHOT,
+					onComplete: function(_)
+					{
+						tween = null;
+					},
+					ease: FlxEase.circInOut
+				});
+
+				tween = FlxTween.tween(text, {"scale.x": 1.1, "scale.y": 1.1}, 0.1, {
+					type: ONESHOT,
+					onComplete: function(_)
+					{
+						tween2 = null;
+					},
+					ease: FlxEase.circInOut
+				});
+			}
 
 			if (FlxG.mouse.justPressed)
 			{
 				onClick();
 			}
+			hovering = true;
 		}
 		else
 		{
-			hovering = false;
-
 			if (bg.scale.x == 1.1)
 			{
-				if (tween != null)
+				if (tween != null && hovering)
 					tween.cancel();
 
 				tween = FlxTween.tween(bg, {"scale.x": 1, "scale.y": 1}, 0.1, {
@@ -148,7 +158,16 @@ class Button extends FlxGroup
 					},
 					ease: FlxEase.circInOut
 				});
+				tween = FlxTween.tween(text, {"scale.x": 1, "scale.y": 1}, 0.1, {
+					type: ONESHOT,
+					onComplete: function(_)
+					{
+						tween2 = null;
+					},
+					ease: FlxEase.circInOut
+				});
 			}
+			hovering = false;
 		}
 	}
 
