@@ -9,7 +9,7 @@ import flixel.util.helpers.FlxBounds;
 class Player extends FlxSprite {
     public var health:Int = 100;
 
-    public var speed:Int = 200;
+	public var speed:Int = 220;
 	public var weapons:Array<Weapon> = [];
     public var hurtCooldown:Float = 1;
 
@@ -89,7 +89,7 @@ class Player extends FlxSprite {
         {
             health -= damageTaken;
             time = 0;
-			FlxG.sound.play("hurt", Preferences.config.volume / 10, false);
+			FlxG.sound.play("hurt", FlxG.sound.volume, false);
             FlxFlicker.flicker(this, hurtCooldown, 0.1, true, false);
         }
 

@@ -101,7 +101,7 @@ class Weapon extends FlxTypedWeapon<Bullet>{
 				Type.enumIndex(this.stats.type) == 3 ? this.stats.type.getParameters()[0] : null);
 		});
 
-		onPostFireSound = FlxG.sound.load("shoot", Preferences.config.volume / 10);
+		onPostFireSound = FlxG.sound.load("shoot", FlxG.sound.volume);
 	}
 
 	public function fire():Bool

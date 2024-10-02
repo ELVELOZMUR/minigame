@@ -18,7 +18,7 @@ class Level extends FlxSpriteGroup {
 
 		bar = new FlxBar(0, FlxG.height - 20, LEFT_TO_RIGHT, FlxG.width, 20, this, "currentEXP", 0, levelLimit);
 		bar.createFilledBar(FlxColor.BLACK, FlxColor.fromRGB(44, 26, 64));
-		bar.alpha = 0.5;
+		bar.alpha = 0.8;
         add(bar);
 
         text = new FlxText(bar.x, FlxG.height - 20, FlxG.width, '$currentEXP / $levelLimit', 10);

@@ -2,14 +2,14 @@ package;
 
 class Button extends FlxGroup
 {
-	var bg:FlxSprite;
+	public var bg:FlxSprite;
 
 	public var text:FlxText;
 
 	public var justPressed(get, null):Bool;
 
-	var tween:FlxTween = null;
-	var tween2:FlxTween = null;
+	public var tween:FlxTween = null;
+	public var tween2:FlxTween = null;
 
 	public var hovering(default, null):Bool = false;
 

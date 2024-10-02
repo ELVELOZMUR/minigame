@@ -113,13 +113,14 @@ class LevelUpSubstate extends FlxSubState {
 			add(bg);
 			bgs.push(bg);
 			
-			var text = new FlxText(bg.x, bg.y, bg.width, 'Name: ${cast(data, Weapon).name}\nPrecision: ${cast(data, Weapon).stats.precision}\nDamage: ${cast(data, Weapon).stats.damage}\nFire Rate: ${(cast(data, Weapon).stats.fireRate / 1000)}\nBullet per shot: ${cast(data, Weapon).stats.multishot}\nBullet Size: ${FlxMath.roundDecimal(cast(data, Weapon).stats.bulletSize, 1)}\nBullet Speed: ${cast(data, Weapon).stats.bulletSpeed}\nPassive: ${cast(data, Weapon).stats.passive}',
+			var text = new FlxText(bg.x + 10, bg.y, bg.width,
+				'Name: ${cast (data, Weapon).name}\nPrecision: ${cast (data, Weapon).stats.precision}\nDamage: ${cast (data, Weapon).stats.damage}\nFire Rate: ${(cast(data, Weapon).stats.fireRate / 1000)}\nBullet per shot: ${cast (data, Weapon).stats.multishot}\nBullet Size: ${FlxMath.roundDecimal(cast(data, Weapon).stats.bulletSize, 1)}\nBullet Speed: ${cast (data, Weapon).stats.bulletSpeed}\nPassive: ${cast (data, Weapon).stats.passive}',
 			16);
 			text.color = FlxColor.BLACK;
 			add(text);
 			texts.push(text);
 
-			var button = new Button(text.x, text.y + text.height + 5, Math.ceil(bg.width), 50, Enemy.enemyColor, "Choose Weapon");
+			var button = new Button(text.x, text.y + text.height + 5, Math.ceil(bg.width) - 50, 50, Enemy.enemyColor, "Choose Weapon");
 			button.onClick = function () {
 				_parentState.closeSubState();
 				trace(cast(data, Weapon).stats);
@@ -130,19 +131,19 @@ class LevelUpSubstate extends FlxSubState {
 		}
 		else
 		{
-			var bg = new FlxSprite(FlxG.width/3 * i, 50);
-			bg.makeGraphic(Math.ceil(FlxG.width/3), FlxG.height - 100, FlxColor.TRANSPARENT);
-			FlxSpriteUtil.drawRoundRect(bg, 0, 0, FlxG.width/3, FlxG.height - 100, 20, 20, FlxColor.GRAY);
+			var bg = new FlxSprite(camera.viewX + camera.viewWidth / choiceQuantity * i, camera.viewY + 50);
+			bg.makeGraphic(Math.ceil(FlxG.width / choiceQuantity), FlxG.height - 100, FlxColor.TRANSPARENT);
+			FlxSpriteUtil.drawRoundRect(bg, 0, 0, Math.ceil(FlxG.width / choiceQuantity), FlxG.height - 100, 20, 20, FlxColor.GRAY);
 			bg.alpha = 0.6;
 			add(bg);
 			bgs.push(bg);
 			
-			var text = new FlxText(bg.x, bg.y, bg.width, '${cast(data, Modifier).getName()}: ${cast(data, Modifier).getParameters()}', 16);
+			var text = new FlxText(bg.x + 10, bg.y, bg.width, '${cast (data, Modifier).getName()}: ${cast (data, Modifier).getParameters()}', 16);
 			text.color = FlxColor.BLACK;
 			add(text);
 			texts.push(text);
 
-			var button = new Button(text.x, text.y + text.height + 5, Math.ceil(bg.width), 50, Enemy.enemyColor, "Choose Modifier");
+			var button = new Button(text.x, text.y + text.height + 5, Math.ceil(bg.width) - 50, 50, Enemy.enemyColor, "Choose Modifier");
 			button.onClick = function () {
 				_parentState.closeSubState();
 				trace(cast(data, Modifier));

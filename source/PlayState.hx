@@ -18,6 +18,8 @@ class PlayState extends FlxState
 	public var score = 0;
 	public static var randomAngle = 20;
 	var timeText:FlxText;
+	var enemyDamage = 5.0;
+	var enemyHealth = 10.0;
 
 	var scoreText:FlxText;
 	/**
@@ -68,6 +70,7 @@ class PlayState extends FlxState
 
 	var time = 0.0;
 	var time2 = 0.0;
+	var tenTimes = 1.0;
 
 	override public function update(elapsed:Float)
 	{
@@ -76,19 +79,23 @@ class PlayState extends FlxState
 		FlxG.worldBounds.set(camera.viewX, camera.viewY, camera.viewWidth, camera.viewHeight);
 
 		if (player.health <= 0)
-		{
-			die();
-		}
+			inline die();
 
 		time += elapsed;
 		time2 += elapsed;
 
-		timeText.text = FlxStringUtil.formatTime(time2, false);
 
+		timeText.text = FlxStringUtil.formatTime(time2, false);
+		tenTimes = Math.floor(time2 / 20);
+		if (tenTimes < 1)
+			tenTimes = 1;
+
+		// idk anything about logs, they just seem cool
 		if (time >= enemySpawnTime - Math.log(time2) / 5)
 		{
-			var enemy = new Enemy(FlxG.random.int(-100, FlxG.width + 100), FlxG.random.int(-100, FlxG.height + 100),
-				Math.log(time2) / 10 > 1 ? Math.ceil(5 * Math.log(time2) / 5) : 5, 10);
+			var enemy = new Enemy(FlxG.random.float(FlxG.worldBounds.x, FlxG.worldBounds.x + FlxG.worldBounds.width),
+				FlxG.random.float(FlxG.worldBounds.y, FlxG.worldBounds.y + FlxG.worldBounds.height), Math.floor(Math.pow(enemyHealth, tenTimes)),
+				Math.floor(Math.pow(enemyDamage, tenTimes)), ENEMY, Math.floor(100 * tenTimes));
 			enemies.add(enemy);
 			time = 0;
 		}
@@ -119,6 +126,8 @@ class PlayState extends FlxState
 	}
 
 	function die() {
+		instance = null;
+
 		for (weapon in player.weapons)
 		{
 			weapon.group.forEach(function(_)
@@ -126,11 +135,23 @@ class PlayState extends FlxState
 				_.destroy();
 			}, true);
 			weapon.group.clear();
+			weapon = null;
 		}
-		if (subState != null)
-			closeSubState();
+		player.destroy();
+		levelBar.bar.destroy();
+
+		closeSubState();
 		
-		FlxG.switchState(Menu.new);
+		if (FlxG.save.data.score != null)
+		{
+			FlxG.save.data.score = Math.max(score, FlxG.save.data.score);
+		}
+		else
+			FlxG.save.data.score = score;
+		FlxG.save.flush();
+		FlxG.signals.preUpdate.removeAll();
+
+		FlxG.resetGame();
 	}
 
 	function scorePop(scar:Int) {
