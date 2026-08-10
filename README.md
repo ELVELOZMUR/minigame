@@ -1,4 +1,4 @@
-Hiiii!
+This is my first ever published game, don't expect it to be good or anything
 
 This game has been made with HaxeFlixel so if you want to compile just follow these steps:
 
